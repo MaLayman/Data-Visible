@@ -104,9 +104,9 @@ if uploaded_file is not None:
 
     #数据预览设置
     st.subheader("数据预览")
-    st.dataframe(df)
+    st.dataframe(st.session_state.df)
 
-    st.caption(f"当前列名:{' , '.join(df.columns)}")
+    st.caption(f"当前列名:{' , '.join(st.session_state.df.columns)}")
 
     #数据清洗功能设置
     st.subheader("数据清洗")
@@ -117,6 +117,7 @@ if uploaded_file is not None:
         st.rerun()
 
     with st.expander("缺失值处理",expanded=True):
+        df = st.session_state.df
         col1,col2 = st.columns([1,3])
         with col1:
             target_col = st.selectbox("选择你要处理的列",st.session_state.df.columns,key="missing_col")
@@ -172,6 +173,7 @@ if uploaded_file is not None:
 
     #重复值处理
     with st.expander("重复值处理",expanded=False):
+        df = st.session_state.df
         dup_mode = st.radio("去重范围",["完全重复","按指定列判断重复"],key="dup_mode")
         dup_keys = None
         if dup_mode == "按指定列判断重复":
@@ -209,6 +211,7 @@ if uploaded_file is not None:
 
     #异常值处理功能设置
     with st.expander("异常值处理",expanded=False):
+        df = st.session_state.df
         numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
 
         if len(numeric_cols) == 0:
