@@ -93,14 +93,15 @@ if 'df_history' not in st.session_state:
 uploaded_file = st.file_uploader("上传数据文件(支持CSV和Excel格式)",type=['csv','xlsx','xls'])
 
 if uploaded_file is not None:
-    #读取表格文件设置
-    if uploaded_file.name.endswith('csv'):
-        df = pd.read_csv(uploaded_file)
-    else:
-        df = pd.read_excel(uploaded_file)
-    
-    st.session_state.df = df
-    st.success(f"成功加载{uploaded_file.name},共{df.shape[0]}行,{df.shape[1]}列")
+    if st.session_state.df is None:
+        #读取表格文件设置
+        if uploaded_file.name.endswith('csv'):
+            df = pd.read_csv(uploaded_file)
+        else:
+            df = pd.read_excel(uploaded_file)
+        
+        st.session_state.df = df
+        st.success(f"成功加载{uploaded_file.name},共{df.shape[0]}行,{df.shape[1]}列")
 
     #数据预览设置
     st.subheader("数据预览")
@@ -113,7 +114,8 @@ if uploaded_file is not None:
 
     def apply_clean(operation_func):
         st.session_state.df_history.append(st.session_state.df.copy())
-        st.session_state.df = operation_func(st.session_state.df)
+        new_df = operation_func(st.session_state.df)
+        st.session_state.df = new_df
         st.rerun()
 
     with st.expander("缺失值处理",expanded=True):
@@ -144,6 +146,7 @@ if uploaded_file is not None:
 
 
         if st.button("执行缺失值处理",key="btn_missing"):
+
             def clean_missing(d):
                 d_copy = d.copy()
                 if method == "删除该列":
@@ -166,6 +169,9 @@ if uploaded_file is not None:
                     except ValueError:
                         val = fill_value
                     d_copy[target_col] = d_copy[target_col].fillna(val)
+                    return d_copy
+                else:
+                    st.write("未匹配任何分支")
                     return d_copy
                 
             apply_clean(clean_missing)
